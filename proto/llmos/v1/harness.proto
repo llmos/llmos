@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package llmos.v1;
+
+// Harness: all orchestration lives on the server. The client sends a turn request
+// and receives a stream of structured events until the turn finishes.
+service Harness {
+  rpc RunTurn(RunTurnRequest) returns (stream HarnessEvent);
+}
+
+message RunTurnRequest {
+  string session_id = 1;
+  string agent_id = 2;
+  string user_message = 3;
+  // If empty, server default policy applies. If set, only these tool names may run.
+  repeated string allowed_tool_names = 4;
+}
+
+message HarnessEvent {
+  string correlation_id = 1;
+  uint64 seq = 2;
+  oneof payload {
+    Phase phase = 10;
+    MemoryContext memory = 11;
+    ToolCall tool = 12;
+    PartialOutput partial = 13;
+    TurnComplete complete = 14;
+    Error error = 15;
+    Log log = 16;
+  }
+}
+
+message Phase {
+  string name = 1;
+  string detail = 2;
+}
+
+message MemoryContext {
+  // Short description for UI (not necessarily full transcript).
+  string summary = 1;
+  uint32 prior_turns = 2;
+}
+
+message ToolCall {
+  string tool_name = 1;
+  string request = 2;
+  string response = 3;
+}
+
+message PartialOutput {
+  string chunk = 1;
+}
+
+message TurnComplete {
+  string agent_id = 1;
+  string output = 2;
+}
+
+message Error {
+  string code = 1;
+  string message = 2;
+}
+
+message Log {
+  string level = 1;
+  string message = 2;
+}

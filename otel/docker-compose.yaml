@@ -1,0 +1,16 @@
+# Local OTLP receiver + file export (traces, metrics, logs → otel/data/*.json).
+# From repo root:
+#   docker compose -f otel/docker-compose.yaml up -d
+# Then run llmos with:
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4317 RUST_LOG=info cargo run -- server
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./collector-local.yaml:/etc/otelcol-contrib/config.yaml:ro
+      - ./data:/data:rw
+    ports:
+      - "4317:4317"
+      - "4318:4318"

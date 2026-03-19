@@ -1,0 +1,46 @@
+# OpenTelemetry Collector (contrib) — receive OTLP, append JSON lines to local files.
+# Run with: docker compose -f otel/docker-compose.yaml up -d
+# Output directory (on the host): otel/data/
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch: {}
+
+exporters:
+  file/traces:
+    path: /data/traces.json
+    format: json
+    append: true
+    create_directory: true
+  file/metrics:
+    path: /data/metrics.json
+    format: json
+    append: true
+    create_directory: true
+  file/logs:
+    path: /data/logs.json
+    format: json
+    append: true
+    create_directory: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [file/traces]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [file/metrics]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [file/logs]
